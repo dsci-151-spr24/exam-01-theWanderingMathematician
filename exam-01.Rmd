@@ -1,6 +1,6 @@
 ---
 title: "Take Home Exam #1"
-author: "Adam J Sullivan"
+author: "Micaiah Balonek"
 date: "February 24, 2024"
 output: html_document
 ---
@@ -11,6 +11,7 @@ output: html_document
 
 # set the echo option to FALSE to see how the document looks with the code suppressed
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
 ```
 
 ## Rules
@@ -99,19 +100,57 @@ The main data is in the `flights` data frame, but there are additional data sets
 1.  **Question 1 (10 points)** - What are the ten most common destinations for flights from NYC airports in 2013?
     Make a table that lists these in descending order of frequency and shows the number of fligts heading to each airport.
 
+```{r}
+#| label: "common_destinations"
+nycflights13::flights %>%
+  count(dest) %>% 
+  arrange(desc(n)) %>% 
+  slice(1:10)
+```
+
+- *To find the top ten most frequent destinations, we take the `flights` dataset from the `nycflights13` package, count how many flights ended at each destination, sort them by descending number of flights, and select only the first 10 values. The top 10 most common destinations are, according to this pipeline, ORD, ATL, LAX, BOS, MCO, CLT, SFO, FLL, MIA, and DCA.*
+
 2.  **Question 2 (10 points)** - Which airlines have the most flights departing from NYC airports in 2013?
     Make a table that lists these in descending order of frequency and shows the number of flights for each airline.
     In your narrative mention the names of the airlines as well.
     *Hint:* You can use the `airlines` dataset to look up the airline name based on `carrier` code.
 
+```{r}
+#| label: "common_airlines"
+nycflights13::flights %>%
+  inner_join(nycflights13::airlines,
+            by = "carrier") %>% #join names of airlines to flights dataframe
+  mutate(airline = name, .keep = "unused") %>%
+  count(airline) %>%
+  arrange(desc(n))
+```
+
+- *To solve this question, we take the flights data, and add an extra column "`airline`" for the name of the airline (joining the `airlines` dataframe to the destination codes of the `flights` dataframe), count how many flights were from each airline, and sort them in descending order of frequency. The four airlines with the most departing flights are United Airlines, JetBlue Airways, ExpressJet Airlines, and Delta Airlines.*
+
 3.  **Question 3 (10 points)** - Consider only flights that have non-missing arrival delay information.
     Your answer should include the name of the carrier in addition to the carrier code and the values asked.
 
+```{r eval=TRUE}
+#| label: "carrier_delays"
+
+carrier_delays <- nycflights13::flights %>%
+  filter(!is.na(arr_delay))  %>%
+  group_by(carrier) %>%
+  summarise(mean_delay = mean(arr_delay))  %>%
+  inner_join(nycflights13::airlines,
+            by = "carrier") %>%
+  mutate(carrier_name = name, carrier_code = carrier, .keep = "unused")
+```
+
+- *To find the mean arrival delay of each airline, we start by removing the flights with missing values of delays. We then group by the carrier codes of the flights, and take the mean of the arrival delays for each carrier code. We then add in the name of the carrier using the airlines dataframe, rename the variables to be more clear, and save this into a new dataframe. To answer the questions, we slice off the minimum and maximum mean values using inline code.*
+
     a\.
     Which carrier had the highest mean arrival delay?
+- *The airline carrier with the highest mean delay in 2013 was `r slice_max(carrier_delays, mean_delay, n=1)$carrier_name`, with code `r slice_max(carrier_delays, mean_delay, n=1)$carrier_code`*
 
     b\.
     Which carrier had the lowest mean arrival delay?
+- *The airline carrier with the lowest mean delay in 2013 was `r slice_min(carrier_delays, mean_delay, n=1)$carrier_name`, with code `r slice_min(carrier_delays, mean_delay, n=1)$carrier_code`*
 
 4.  **Question 4 (10 points)** - What was the mean temperature at the origin airport on the day with the highest departure delay?
     Your answer should include the name of origin airport, the date with the highest departure delay, and the mean temperature on that day.

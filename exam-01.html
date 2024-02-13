@@ -9,7 +9,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Adam J Sullivan" />
+<meta name="author" content="Micaiah Balonek" />
 
 <meta name="date" content="2024-02-24" />
 
@@ -351,7 +351,7 @@ display: none;
 
 
 <h1 class="title toc-ignore">Take Home Exam #1</h1>
-<h4 class="author">Adam J Sullivan</h4>
+<h4 class="author">Micaiah Balonek</h4>
 <h4 class="date">February 24, 2024</h4>
 
 </div>
@@ -469,23 +469,108 @@ and names</li>
 <div id="questions" class="section level2">
 <h2>Questions</h2>
 <ol style="list-style-type: decimal">
-<li><p><strong>Question 1 (10 points)</strong> - What are the ten most
+<li><strong>Question 1 (10 points)</strong> - What are the ten most
 common destinations for flights from NYC airports in 2013? Make a table
 that lists these in descending order of frequency and shows the number
-of fligts heading to each airport.</p></li>
-<li><p><strong>Question 2 (10 points)</strong> - Which airlines have the
+of fligts heading to each airport.</li>
+</ol>
+<pre class="r"><code>nycflights13::flights %&gt;%
+  count(dest) %&gt;% 
+  arrange(desc(n)) %&gt;% 
+  slice(1:10)</code></pre>
+<pre><code>## # A tibble: 10 × 2
+##    dest      n
+##    &lt;chr&gt; &lt;int&gt;
+##  1 ORD   17283
+##  2 ATL   17215
+##  3 LAX   16174
+##  4 BOS   15508
+##  5 MCO   14082
+##  6 CLT   14064
+##  7 SFO   13331
+##  8 FLL   12055
+##  9 MIA   11728
+## 10 DCA    9705</code></pre>
+<ul>
+<li><em>To find the top ten most frequent destinations, we take the
+<code>flights</code> dataset from the <code>nycflights13</code> package,
+count how many flights ended at each destination, sort them by
+descending number of flights, and select only the first 10 values. The
+top 10 most common destinations are, according to this pipeline, ORD,
+ATL, LAX, BOS, MCO, CLT, SFO, FLL, MIA, and DCA.</em></li>
+</ul>
+<ol start="2" style="list-style-type: decimal">
+<li><strong>Question 2 (10 points)</strong> - Which airlines have the
 most flights departing from NYC airports in 2013? Make a table that
 lists these in descending order of frequency and shows the number of
 flights for each airline. In your narrative mention the names of the
 airlines as well. <em>Hint:</em> You can use the <code>airlines</code>
 dataset to look up the airline name based on <code>carrier</code>
-code.</p></li>
-<li><p><strong>Question 3 (10 points)</strong> - Consider only flights
-that have non-missing arrival delay information. Your answer should
-include the name of the carrier in addition to the carrier code and the
-values asked.</p>
-<p>a. Which carrier had the highest mean arrival delay?</p>
+code.</li>
+</ol>
+<pre class="r"><code>nycflights13::flights %&gt;%
+  inner_join(nycflights13::airlines,
+            by = &quot;carrier&quot;) %&gt;% #join names of airlines to flights dataframe
+  mutate(airline = name, .keep = &quot;unused&quot;) %&gt;%
+  count(airline) %&gt;%
+  arrange(desc(n))</code></pre>
+<pre><code>## # A tibble: 16 × 2
+##    airline                         n
+##    &lt;chr&gt;                       &lt;int&gt;
+##  1 United Air Lines Inc.       58665
+##  2 JetBlue Airways             54635
+##  3 ExpressJet Airlines Inc.    54173
+##  4 Delta Air Lines Inc.        48110
+##  5 American Airlines Inc.      32729
+##  6 Envoy Air                   26397
+##  7 US Airways Inc.             20536
+##  8 Endeavor Air Inc.           18460
+##  9 Southwest Airlines Co.      12275
+## 10 Virgin America               5162
+## 11 AirTran Airways Corporation  3260
+## 12 Alaska Airlines Inc.          714
+## 13 Frontier Airlines Inc.        685
+## 14 Mesa Airlines Inc.            601
+## 15 Hawaiian Airlines Inc.        342
+## 16 SkyWest Airlines Inc.          32</code></pre>
+<ul>
+<li><em>To solve this question, we take the flights data, and add an
+extra column “<code>airline</code>” for the name of the airline (joining
+the <code>airlines</code> dataframe to the destination codes of the
+<code>flights</code> dataframe), count how many flights were from each
+airline, and sort them in descending order of frequency. The four
+airlines with the most departing flights are United Airlines, JetBlue
+Airways, ExpressJet Airlines, and Delta Airlines.</em></li>
+</ul>
+<ol start="3" style="list-style-type: decimal">
+<li><strong>Question 3 (10 points)</strong> - Consider only flights that
+have non-missing arrival delay information. Your answer should include
+the name of the carrier in addition to the carrier code and the values
+asked.</li>
+</ol>
+<pre class="r"><code>carrier_delays &lt;- nycflights13::flights %&gt;%
+  filter(!is.na(arr_delay))  %&gt;%
+  group_by(carrier) %&gt;%
+  summarise(mean_delay = mean(arr_delay))  %&gt;%
+  inner_join(nycflights13::airlines,
+            by = &quot;carrier&quot;) %&gt;%
+  mutate(carrier_name = name, carrier_code = carrier, .keep = &quot;unused&quot;)</code></pre>
+<ul>
+<li><p><em>To find the mean arrival delay of each airline, we start by
+removing the flights with missing values of delays. We then group by the
+carrier codes of the flights, and take the mean of the arrival delays
+for each carrier code. We then add in the name of the carrier using the
+airlines dataframe, rename the variables to be more clear, and save this
+into a new dataframe. To answer the questions, we slice off the minimum
+and maximum mean values using inline code.</em></p>
+<p>a. Which carrier had the highest mean arrival delay?</p></li>
+<li><p><em>The airline carrier with the highest mean delay in 2013 was
+Frontier Airlines Inc., with code F9</em></p>
 <p>b. Which carrier had the lowest mean arrival delay?</p></li>
+<li><p><em>The airline carrier with the lowest mean delay in 2013 was
+Alaska Airlines Inc., with code AS</em></p></li>
+</ul>
+<ol start="4" style="list-style-type: decimal">
 <li><p><strong>Question 4 (10 points)</strong> - What was the mean
 temperature at the origin airport on the day with the highest departure
 delay? Your answer should include the name of origin airport, the date
