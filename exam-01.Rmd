@@ -258,6 +258,20 @@ nycflights13::airports %>%
 
 ![](img/plot-to-recreate.png)
 
+```{r}
+#| label: plot_remaking
+
+nycflights13::flights %>%
+  filter(dest %in% c("RDU", "PHL"), month == 12, !is.na(arr_delay)) %>%
+  mutate(arrival = if_else(arr_delay > 0, "delayed", "ontime")) %>%
+  ggplot(aes(x = arrival, y = dep_delay, colour = dest)) +
+  geom_boxplot() +
+  theme(aspect.ratio = 0.5) +
+  facet_grid(dest ~ origin) +
+  labs(title = "On time performance of NYC flights", subtitle = "December 2013", x = "Arrival", y = "Departure delay", colour = "Destination")
+```
+- *This chart seems to be comparing the departure delay of flights on different routes in December 2013 with whether they arrived at their destination on time. The title seems to suggest that this chart would be comparing how many flights were delayed vs. on-time, but that would use a histogram, not a box plot. Perhaps the point of the graph is the distribution of departure delays in the delayed category for flights going to different destinations, since the graph shows two seemingly-arbitrary locations? Even this seems dubious, but it seems like the most likely point that I can think of.*
+
 **Extra Credit (5 pts)** - Create a visualization that effectively shows if there is a relationship between the average daily departure delay and the average daily temperature for all three New York city airports.
 Your answer must be given in a single pipe.
 (You should only spend time on this question once you have finished answering the others)
