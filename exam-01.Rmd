@@ -272,6 +272,25 @@ nycflights13::flights %>%
 ```
 - *This chart seems to be comparing the departure delay of flights on different routes in December 2013 with whether they arrived at their destination on time. The title seems to suggest that this chart would be comparing how many flights were delayed vs. on-time, but that would use a histogram, not a box plot. Perhaps the point of the graph is the distribution of departure delays in the delayed category for flights going to different destinations, since the graph shows two seemingly-arbitrary locations? Even this seems dubious, but it seems like the most likely point that I can think of.*
 
+
 **Extra Credit (5 pts)** - Create a visualization that effectively shows if there is a relationship between the average daily departure delay and the average daily temperature for all three New York city airports.
 Your answer must be given in a single pipe.
 (You should only spend time on this question once you have finished answering the others)
+```{r}
+#| label: temperature_vs_delay
+nycflights13::flights %>%
+  inner_join(nycflights13::weather, 
+             join_by(time_hour, hour, year, month, day, origin)) %>%
+  group_by(origin, month, day) %>%
+  filter(!is.na(temp), !is.na(dep_delay)) %>%
+  summarise(daily_temp = mean(temp), 
+            mean_delay = mean(dep_delay)) %>%
+  ggplot(aes(x = daily_temp, y = mean_delay, colour = origin)) +
+  geom_point() +
+  facet_wrap(~ origin) +
+  labs(title = "Airplane delays vs. daily temperature", subtitle = "in flights departing from NYC airports", x = "Average daily temperature", y = "Average daily departure delay", colour = "Airport of origin") +
+  ylim(NA, 75)
+```
+- *To make this chart, we joined the `weather` and `flights` datasets, grouped them by origin and date of departure, and then took the means of both the departure delay and the temperatures over each group. We then plotted them against eachother, faceted by origin airport, and limited the y-values to those below 75 to ignore 4 outliers and to see the rest of the graph more clearly.*
+- *The data shows a general trend that when the daily temperature gets higher, the higher bound on the departure delay decreases, while the lower bound remains roughly the same (although the lower bound does seem to reach a minimum around 60 degrees in all facets). These trends are especially notable in LGA, where, excluding two outliers (one not pictured), the upper bound is nearly linear. They are less clearly visible in the other two airports, but in them as well, the denser parts of the scatterplots do show a positive correlation.*
+- *It should be noted, however, that this, while it may be compelling, is not authoritative, and that further data may reveal it to be a statistical fluke; in addition to this, the densest part of the range is consistently below 15 minutes delayed in all three airports, and seems to follow the same trend as the lower bound, staying roughly the same, but having a minimum value at around 60 degrees.*
