@@ -142,7 +142,7 @@ carrier_delays <- nycflights13::flights %>%
   mutate(carrier_name = name, carrier_code = carrier, .keep = "unused")
 ```
 
-- *To find the mean arrival delay of each airline, we start by removing the flights with missing values of delays. We then group by the carrier codes of the flights, and take the mean of the arrival delays for each carrier code. We then add in the name of the carrier using the airlines dataframe, rename the variables to be more clear, and save this into a new dataframe. To answer the questions, we slice off the minimum and maximum mean values using inline code.*
+- *To find the mean arrival delay of each airline, we start by removing the flights with missing values of delays. We then group by the carrier codes of the flights and take the mean of the arrival delays for each carrier code. We then add in the name of the carrier using the airlines dataframe, rename the variables to be more clear, and save this into a new dataframe. To answer the questions, we slice off the minimum and maximum mean values using inline code.*
 
     a\.
     Which carrier had the highest mean arrival delay?
@@ -154,6 +154,22 @@ carrier_delays <- nycflights13::flights %>%
 
 4.  **Question 4 (10 points)** - What was the mean temperature at the origin airport on the day with the highest departure delay?
     Your answer should include the name of origin airport, the date with the highest departure delay, and the mean temperature on that day.
+
+```{r}
+#| label: temp_on_delay_day
+highest_delay <- nycflights13::flights %>%
+  mutate(date = str_c(day, "/", month, "/", year)) %>%
+  arrange(desc(dep_delay)) %>%
+  slice(1)
+
+nycflights13::weather %>%
+  mutate(date = str_c(day, "/", month, "/", year)) %>%
+  filter(date == highest_delay$date, origin == highest_delay$origin) %>%
+  select(origin, date, temp) %>%
+  summarise(origin = origin[1], date = date[1], mean_temp = mean(temp))
+```
+
+- *We start by combining the `day`, `month`, and `year` variables in the flights dataframe into a single `date` variable, sorting by descending order of departure delay, and select only the top row of the dataframe, and assign this to a new variable. We then turn to the `weather` dataframe and mutate the date variable into it as well, before filtering for those with the same date value and origin airport and taking the mean of all the temperatures still in the dataframe. According to this data, the flight with the highest departure delay left from John F. Kennedy on January 9th, 2013, and the mean temperature there on that day was about 43 degrees Fahrenheit.*
 
 5.  **Question 5 (15 points)** - Consider breaking the day into four time intervals: 12:01am-6am, 6:01am-12pm, 12:01pm-6pm, 6:01pm-12am.
 
