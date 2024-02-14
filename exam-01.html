@@ -605,18 +605,79 @@ January 9th, 2013, and the mean temperature there on that day was about
 43 degrees Fahrenheit.</em></li>
 </ul>
 <ol start="5" style="list-style-type: decimal">
-<li><p><strong>Question 5 (15 points)</strong> - Consider breaking the
-day into four time intervals: 12:01am-6am, 6:01am-12pm, 12:01pm-6pm,
-6:01pm-12am.</p>
+<li><strong>Question 5 (15 points)</strong> - Consider breaking the day
+into four time intervals: 12:01am-6am, 6:01am-12pm, 12:01pm-6pm,
+6:01pm-12am.</li>
+</ol>
+<pre class="r"><code>flight_time_ints &lt;- nycflights13::flights %&gt;%
+  mutate(time_int = case_when(
+    hour %in% 0:5 ~ &quot;am 12:01-6:00&quot;,
+    hour %in% 6:11 ~ &quot;am 6:01-12:00&quot;,
+    hour %in% 12:17 ~ &quot;pm 12:01-6:00&quot;,
+    hour %in% 18:24 ~ &quot;pm 6:01-12:00&quot;
+  ))</code></pre>
+<ul>
+<li><p><em>In this first pipeline, we add a variable to the flights
+dataframe, determining which quarter of the day the flight was in, and
+then save it to a new dataframe</em></p>
 <p>a. Calculate the proportion of flights that are delayed at departure
-at each of these time intervals.</p>
+at each of these time intervals.</p></li>
+</ul>
+<pre class="r"><code>flight_time_ints %&gt;%
+  group_by(time_int) %&gt;%
+  reframe(., prop_delayed = group_size(filter(., dep_delay &gt; 0))/group_size(.)) %&gt;%
+  slice(1, 6, 11, 16)</code></pre>
+<pre><code>## # A tibble: 4 × 2
+##   time_int      prop_delayed
+##   &lt;chr&gt;                &lt;dbl&gt;
+## 1 am 12:01-6:00        0.250
+## 2 am 6:01-12:00        0.252
+## 3 pm 12:01-6:00        0.443
+## 4 pm 6:01-12:00        0.501</code></pre>
+<ul>
+<li><p><em>To answer this question, we take the data that we made in the
+previous code chunk, group it by the time interval, and calculate the
+proportion of flights that are delayed in each group. In this code, we
+can see that the proportion is about 25% both from midnight to 6am and
+from 6am to noon, 44% from noon to 6pm, and 50% from 6pm to
+midnight.</em></p>
 <p>b. Comment on how the likelihood of being delayed change throughout
 the day?</p></li>
-<li><p><strong>Question 6 (15 points)</strong> - Find the flight with
-the longest air time.</p>
-<p>a. How long is this flight?</p>
-<p>b. What city did it fly to?</p>
+<li><p><em>In the morning (including the part of the night in AM), about
+a quarter of the flights are delayed, which grows throughout the day
+until the fourth quarter of the day, when over half the flights are
+delayed. Perhaps the delays build up through the day, since it gets
+higher over time, but that doesn’t really explain why flights are no
+longer as delayed in the early morning compared to in the evening and
+night.</em></p></li>
+</ul>
+<ol start="6" style="list-style-type: decimal">
+<li><strong>Question 6 (15 points)</strong> - Find the flight with the
+longest air time.</li>
+</ol>
+<pre class="r"><code>longest_flight13 &lt;- nycflights13::flights %&gt;%
+  slice_max(air_time)</code></pre>
+<ul>
+<li><p><em>To find this observation, we simply load in the flights
+dataframe and slice off the observation with highest value of air-time.
+The result is flight 15 from NYC to HNL on 2013-03-17 13:00:00.</em></p>
+<p>a. How long is this flight?</p></li>
+<li><p><em>According to the data, this flight was 695 minutes (11 hours,
+35 minutes) long.</em></p>
+<p>b. What city did it fly to?</p></li>
+<li><p><em>It flew to Honolulu, Hawai’i</em></p>
 <p>c. How many seats does the plane that flew this flight have?</p></li>
+</ul>
+<pre class="r"><code>longest_flight_plane &lt;- nycflights13::flights %&gt;%
+  slice_max(air_time) %&gt;%
+  inner_join(nycflights13::planes, &quot;tailnum&quot;)</code></pre>
+<ul>
+<li><em>To find this number, we join this observation to the
+<code>planes</code> dataframe so that we can see the details of the
+plane from that flight. Looking at this, we see that the plane had 292
+seats.</em></li>
+</ul>
+<ol start="7" style="list-style-type: decimal">
 <li><p><strong>Question 7 (15 pts)</strong> - The <code>airports</code>
 data frame contains information on a large number of primarily American
 airports. These data include location information for these airports in
