@@ -169,7 +169,7 @@ nycflights13::weather %>%
   summarise(origin = origin[1], date = date[1], mean_temp = mean(temp))
 ```
 
-- *We start by combining the `day`, `month`, and `year` variables in the flights dataframe into a single `date` variable, sorting by descending order of departure delay, and select only the top row of the dataframe, and assign this to a new variable. We then turn to the `weather` dataframe and mutate the date variable into it as well, before filtering for those with the same date value and origin airport and taking the mean of all the temperatures still in the dataframe. According to this data, the flight with the highest departure delay left from John F. Kennedy on January 9th, 2013, and the mean temperature there on that day was about 43 degrees Fahrenheit.*
+- *We start by combining the `day`, `month`, and `year` variables in the flights dataframe into a single `date` variable, sorting by descending order of departure delay, and select only the top row of the dataframe, and assign this to a new variable. We then turn to the `weather` dataframe and mutate the date variable into it as well, before filtering for those with the same date value and origin airport and taking the mean of all the temperatures still in the dataframe. According to this data, the flight with the highest departure delay left from John F. Kennedy Airport on January 9th, 2013, and the mean temperature there on that day was about 43 degrees Fahrenheit.*
 
 5.  **Question 5 (15 points)** - Consider breaking the day into four time intervals: 12:01am-6am, 6:01am-12pm, 12:01pm-6pm, 6:01pm-12am.
 
@@ -222,8 +222,7 @@ longest_flight13 <- nycflights13::flights %>%
     How many seats does the plane that flew this flight have?
 ```{r eval = TRUE}
 #| label: longest_flight_seats
-longest_flight_plane <- nycflights13::flights %>%
-  slice_max(air_time) %>%
+longest_flight_plane <- longest_flight13 %>%
   inner_join(nycflights13::planes, "tailnum")
 ```
 - *To find this number, we join this observation to the `planes` dataframe so that we can see the details of the plane from that flight. Looking at this, we see that the plane had `r longest_flight_plane$seats` seats.*
@@ -236,6 +235,21 @@ longest_flight_plane <- nycflights13::flights %>%
     *Hint:* You will first need to limit your analysis to the Contiguous United States.
     [This Wikipedia article](https://en.wikipedia.org/wiki/List_of_extreme_points_of_the_United_States) can help, but you're welcomed to use other resources as well.
     Make sure to cite whatever resource you use.
+
+```{r}
+#| label: contiguous_airports
+nycflights13::airports %>%
+  filter(lon < -66.950, lon >  -124.785, lat < 49.387) %>%
+  ggplot(aes(x = lon, y = lat)) +
+  geom_point() +
+  labs(title = "Locations of airports in the contiguous United States", subtitle = "as represented in the nycflights13 dataset", x = "longitude", y = "latitude")
+```
+
+###### ***Geographical data taken from:***
+
+###### ***Wikipedia contributors. (2024, February 13). List of extreme points of the United States. In Wikipedia, The Free Encyclopedia. Retrieved 15:10, February 14, 2024, from https://en.wikipedia.org/w/index.php?title=List_of_extreme_points_of_the_United_States&oldid=1207066256***
+
+- *To create this plot, I used data from the previously cited article about the limits of the contiguous United States, filtered to airports within those limits, and plotted them on a graph. The distribution of airports in the plot shows especially-high concentrations of airports around metropolitan areas, as well as a few notable areas with significantly fewer airports (notably the empty regions in the northern Nevada area and northwestern Maine). However, aside from these, the distribution of airports is fairly uniform across the USA, growing more dense further to the east you are, aside from the western seaboard, which is much more densely populated than the surrounding areas.*
 
 8.  **Question 8 (15 pts)** - Recreate the plot included below using the `flights` data.
     Once you have created the visualization, in no more than one paragraph, describe what you think the point of this visualization might be.
