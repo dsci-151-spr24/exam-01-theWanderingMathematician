@@ -119,7 +119,7 @@ nycflights13::flights %>%
 #| label: common_airlines
 nycflights13::flights %>%
   inner_join(nycflights13::airlines,
-            by = "carrier") %>% #join names of airlines to flights dataframe
+            by = "carrier") %>% 
   mutate(airline = name, .keep = "unused") %>%
   count(airline) %>%
   arrange(desc(n))
@@ -164,7 +164,8 @@ highest_delay <- nycflights13::flights %>%
 
 nycflights13::weather %>%
   mutate(date = str_c(day, "/", month, "/", year)) %>%
-  filter(date == highest_delay$date, origin == highest_delay$origin) %>%
+  filter(date == highest_delay$date, 
+         origin == highest_delay$origin) %>%
   select(origin, date, temp) %>%
   summarise(origin = origin[1], date = date[1], mean_temp = mean(temp))
 ```
@@ -239,10 +240,15 @@ longest_flight_plane <- longest_flight13 %>%
 ```{r}
 #| label: contiguous_airports
 nycflights13::airports %>%
-  filter(lon < -66.950, lon >  -124.785, lat < 49.387) %>%
+  filter(lon < -66.950, 
+         lon >  -124.785, 
+         lat < 49.387) %>%
   ggplot(aes(x = lon, y = lat)) +
   geom_point() +
-  labs(title = "Locations of airports in the contiguous United States", subtitle = "as represented in the nycflights13 dataset", x = "longitude", y = "latitude")
+  labs(title = "Locations of airports in the contiguous United States", 
+       subtitle = "as represented in the nycflights13 dataset", 
+       x = "longitude", 
+       y = "latitude")
 ```
 
 ###### ***Geographical data taken from:***
@@ -262,13 +268,19 @@ nycflights13::airports %>%
 #| label: plot_remaking
 
 nycflights13::flights %>%
-  filter(dest %in% c("RDU", "PHL"), month == 12, !is.na(arr_delay)) %>%
+  filter(dest %in% c("RDU", "PHL"), 
+         month == 12, 
+         !is.na(arr_delay)) %>%
   mutate(arrival = if_else(arr_delay > 0, "delayed", "ontime")) %>%
   ggplot(aes(x = arrival, y = dep_delay, colour = dest)) +
   geom_boxplot() +
   theme(aspect.ratio = 0.5) +
   facet_grid(dest ~ origin) +
-  labs(title = "On time performance of NYC flights", subtitle = "December 2013", x = "Arrival", y = "Departure delay", colour = "Destination")
+  labs(title = "On time performance of NYC flights", 
+       subtitle = "December 2013", 
+       x = "Arrival", 
+       y = "Departure delay", 
+       colour = "Destination")
 ```
 - *This chart seems to be comparing the departure delay of flights on different routes in December 2013 with whether they arrived at their destination on time. The title seems to suggest that this chart would be comparing how many flights were delayed vs. on-time, but that would use a histogram, not a box plot. Perhaps the point of the graph is the distribution of departure delays in the delayed category for flights going to different destinations, since the graph shows two seemingly-arbitrary locations? Even this seems dubious, but it seems like the most likely point that I can think of.*
 
@@ -282,13 +294,18 @@ nycflights13::flights %>%
   inner_join(nycflights13::weather, 
              join_by(time_hour, hour, year, month, day, origin)) %>%
   group_by(origin, month, day) %>%
-  filter(!is.na(temp), !is.na(dep_delay)) %>%
+  filter(!is.na(temp), 
+         !is.na(dep_delay)) %>%
   summarise(daily_temp = mean(temp), 
             mean_delay = mean(dep_delay)) %>%
   ggplot(aes(x = daily_temp, y = mean_delay, colour = origin)) +
   geom_point() +
   facet_wrap(~ origin) +
-  labs(title = "Airplane delays vs. daily temperature", subtitle = "in flights departing from NYC airports", x = "Average daily temperature", y = "Average daily departure delay", colour = "Airport of origin") +
+  labs(title = "Airplane delays vs. daily temperature", 
+       subtitle = "in flights departing from NYC airports", 
+       x = "Average daily temperature", 
+       y = "Average daily departure delay", 
+       colour = "Airport of origin") +
   ylim(NA, 75)
 ```
 - *To make this chart, we joined the `weather` and `flights` datasets, grouped them by origin and date of departure, and then took the means of both the departure delay and the temperatures over each group. We then plotted them against eachother, faceted by origin airport, and limited the y-values to those below 75 to ignore 4 outliers and to see the rest of the graph more clearly.*
